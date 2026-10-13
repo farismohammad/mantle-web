@@ -1,0 +1,61 @@
+{
+  "name": "mantle-web",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/farismohammad/mantle-web.git"
+  },
+  "bugs": {
+    "url": "https://github.com/farismohammad/mantle-web/issues"
+  },
+  "packageManager": "pnpm@10.14.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint src tests next.config.ts vitest.config.ts eslint.config.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test"
+  },
+  "dependencies": {
+    "@codemirror/lang-yaml": "6.1.2",
+    "@codemirror/language": "6.12.4",
+    "@codemirror/state": "6.5.2",
+    "@codemirror/view": "6.38.2",
+    "@lezer/highlight": "1.2.3",
+    "@uiw/react-codemirror": "4.24.1",
+    "ajv": "^8.20.0",
+    "lucide-react": "0.542.0",
+    "next": "15.5.27",
+    "react": "19.1.4",
+    "react-dom": "19.1.4",
+    "yaml": "2.8.3"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.3.1",
+    "@types/node": "22.18.0",
+    "@types/react": "19.1.12",
+    "@types/react-dom": "19.1.9",
+    "eslint": "9.34.0",
+    "eslint-config-next": "15.5.22",
+    "typescript": "5.9.2",
+    "vitest": "4.1.11"
+  },
+  "pnpm": {
+    "overrides": {
+      "fast-uri": "3.1.8",
+      "@playwright/test": "1.55.1",
+      "brace-expansion@^1.0.0": "1.1.21",
+      "brace-expansion@^5.0.0": "5.0.12",
+      "js-yaml": "4.3.2",
+      "nanoid": "3.3.19",
+      "postcss": "8.5.23",
+      "playwright": "1.55.1",
+      "sharp": "0.35.5"
+    }
+  }
+}

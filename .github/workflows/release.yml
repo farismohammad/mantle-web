@@ -1,0 +1,116 @@
+name: release
+
+# Pushing a tag such as v0.1.0 publishes ghcr.io/farismohammad/mantle-web
+# as 0.1.0, 0.1 and latest, then attaches docker-compose.yml to the GitHub
+# release. A release candidate such as v0.1.0-rc.1 publishes only that exact
+# tag, so it can be tested without changing what users get.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  IMAGE: ghcr.io/farismohammad/mantle-web
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tag matches package.json
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          case "$GITHUB_REF_NAME" in
+            "v$version" | "v$version"-*) ;;
+            *)
+              echo "Tag $GITHUB_REF_NAME does not match package.json version $version (or v$version-rc.N)." >&2
+              exit 1
+              ;;
+          esac
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the image for the smoke test
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: mantle-cloud:smoke
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke-test the published Compose file with that image
+        env:
+          MANTLE_CLOUD_IMAGE: mantle-cloud
+          MANTLE_CLOUD_VERSION: smoke
+          MANTLE_PORT: 3317
+        run: |
+          docker compose -p mantle-release up -d
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3317/v1/health; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              docker compose -p mantle-release logs
+              exit 1
+            fi
+            sleep 2
+          done
+          curl --fail --silent http://127.0.0.1:3317/api/agents \
+            | python -c 'import json, sys; assert json.load(sys.stdin) == {"data": []}'
+
+      - name: Remove the smoke-test container and volume
+        if: always()
+        env:
+          MANTLE_CLOUD_IMAGE: mantle-cloud
+          MANTLE_CLOUD_VERSION: smoke
+        run: docker compose -p mantle-release down --volumes --remove-orphans
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+          labels: |
+            org.opencontainers.image.title=Mantle Cloud
+            org.opencontainers.image.description=Self-hostable registry for Mantle agent configurations
+            org.opencontainers.image.licenses=Apache-2.0
+
+      - name: Build and push linux/amd64 and linux/arm64
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Attach docker-compose.yml to the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" docker-compose.yml --clobber
+          else
+            prerelease=""
+            case "$GITHUB_REF_NAME" in *-*) prerelease="--prerelease" ;; esac
+            gh release create "$GITHUB_REF_NAME" docker-compose.yml --verify-tag --generate-notes $prerelease
+          fi

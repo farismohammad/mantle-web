@@ -1,0 +1,41 @@
+name: checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  cloud:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm build
+      - name: Build and smoke-test the Docker service
+        env:
+          MANTLE_PORT: 3317
+        run: |
+          docker compose -p mantle-release-check -f docker-compose.yml -f compose.build.yaml up --build -d
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3317/v1/health; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              docker compose -p mantle-release-check -f docker-compose.yml -f compose.build.yaml logs
+              exit 1
+            fi
+            sleep 2
+          done
+          curl --fail --silent http://127.0.0.1:3317/api/agents \
+            | python -c 'import json, sys; assert json.load(sys.stdin) == {"data": []}'
+      - name: Remove smoke-test container and volume
+        if: always()
+        run: docker compose -p mantle-release-check -f docker-compose.yml -f compose.build.yaml down --volumes --remove-orphans

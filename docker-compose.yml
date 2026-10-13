@@ -1,0 +1,22 @@
+# Runs the published image. To build from this checkout instead:
+#   docker compose -f docker-compose.yml -f compose.build.yaml up --build -d
+services:
+  mantle-cloud:
+    image: ${MANTLE_CLOUD_IMAGE:-ghcr.io/farismohammad/mantle-web}:${MANTLE_CLOUD_VERSION:-0.1}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${MANTLE_PORT:-3100}:3000"
+    environment:
+      NODE_ENV: production
+      MANTLE_DATA_DIR: /data
+    volumes:
+      - mantle_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/v1/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  mantle_data:

@@ -1,0 +1,7 @@
+# Development override: build the image from this checkout.
+#   docker compose -f docker-compose.yml -f compose.build.yaml up --build -d
+# The local tag keeps a source build from replacing the published image.
+services:
+  mantle-cloud:
+    image: mantle-cloud:dev
+    build: .

@@ -1,0 +1,405 @@
+{
+  "$defs": {
+    "AgentDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Description",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z0-9_][a-z0-9_-]*$",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "AgentDefinition",
+      "type": "object"
+    },
+    "McpDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "servers": {
+          "patternProperties": {
+            "^[A-Za-z0-9][A-Za-z0-9_.-]*$": {
+              "$ref": "#/$defs/McpServerDefinition"
+            }
+          },
+          "title": "Servers",
+          "type": "object"
+        }
+      },
+      "title": "McpDefinition",
+      "type": "object"
+    },
+    "McpServerDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "args": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Args",
+          "type": "array"
+        },
+        "auth": {
+          "anyOf": [
+            {
+              "enum": [
+                "bearer",
+                "oauth"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Auth"
+        },
+        "bearer_token_env": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z_][A-Z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bearer Token Env"
+        },
+        "command": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Command"
+        },
+        "cwd": {
+          "anyOf": [
+            {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cwd"
+        },
+        "debug": {
+          "default": false,
+          "title": "Debug",
+          "type": "boolean"
+        },
+        "direct_tools": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "default": false,
+          "title": "Direct Tools"
+        },
+        "disabled": {
+          "default": false,
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Env",
+          "type": "object"
+        },
+        "exclude_tools": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Exclude Tools",
+          "type": "array"
+        },
+        "expose_resources": {
+          "default": true,
+          "title": "Expose Resources",
+          "type": "boolean"
+        },
+        "headers": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Headers",
+          "type": "object"
+        },
+        "idle_timeout": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Idle Timeout"
+        },
+        "include_tools": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Include Tools",
+          "type": "array"
+        },
+        "lifecycle": {
+          "default": "lazy",
+          "enum": [
+            "lazy",
+            "eager",
+            "keep-alive",
+            "lazy-keep-alive"
+          ],
+          "title": "Lifecycle",
+          "type": "string"
+        },
+        "protocol_version": {
+          "default": "legacy",
+          "enum": [
+            "legacy",
+            "auto",
+            "2026-07-28"
+          ],
+          "title": "Protocol Version",
+          "type": "string"
+        },
+        "request_timeout_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Timeout Ms"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 8192,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        }
+      },
+      "title": "McpServerDefinition",
+      "type": "object"
+    },
+    "ModelDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "default": "gpt-5.6",
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "provider": {
+          "default": "openai",
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Provider",
+          "type": "string"
+        }
+      },
+      "title": "ModelDefinition",
+      "type": "object"
+    },
+    "PermissionsDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "filesystem": {
+          "default": "all",
+          "enum": [
+            "all",
+            "read",
+            "none"
+          ],
+          "title": "Filesystem",
+          "type": "string"
+        },
+        "shell": {
+          "default": "all",
+          "enum": [
+            "all",
+            "none"
+          ],
+          "title": "Shell",
+          "type": "string"
+        }
+      },
+      "title": "PermissionsDefinition",
+      "type": "object"
+    },
+    "ResourceDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^(?:@[A-Za-z0-9_-]+/)?[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 2048,
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        },
+        "version": {
+          "default": null,
+          "description": "Deprecated: pin the version in source instead.",
+          "title": "Version",
+          "type": "null"
+        }
+      },
+      "required": [
+        "name",
+        "source"
+      ],
+      "title": "ResourceDefinition",
+      "type": "object"
+    },
+    "ResourcesDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "packages": {
+          "items": {
+            "$ref": "#/$defs/ResourceDefinition"
+          },
+          "title": "Packages",
+          "type": "array"
+        },
+        "skills": {
+          "items": {
+            "$ref": "#/$defs/ResourceDefinition"
+          },
+          "title": "Skills",
+          "type": "array"
+        }
+      },
+      "title": "ResourcesDefinition",
+      "type": "object"
+    },
+    "RuntimeDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "const": "pi",
+          "default": "pi",
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "default": "latest",
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,63}$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "title": "RuntimeDefinition",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "agent": {
+      "$ref": "#/$defs/AgentDefinition"
+    },
+    "mantle": {
+      "const": "0.1",
+      "default": "0.1",
+      "title": "Mantle",
+      "type": "string"
+    },
+    "mcp": {
+      "$ref": "#/$defs/McpDefinition"
+    },
+    "model": {
+      "$ref": "#/$defs/ModelDefinition"
+    },
+    "permissions": {
+      "$ref": "#/$defs/PermissionsDefinition"
+    },
+    "resources": {
+      "$ref": "#/$defs/ResourcesDefinition"
+    },
+    "runtime": {
+      "$ref": "#/$defs/RuntimeDefinition"
+    },
+    "secrets": {
+      "items": {
+        "pattern": "^[A-Z_][A-Z0-9_]*$",
+        "type": "string"
+      },
+      "title": "Secrets",
+      "type": "array"
+    },
+    "system_prompt": {
+      "anyOf": [
+        {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "System Prompt"
+    }
+  },
+  "required": [
+    "agent"
+  ],
+  "title": "AgentConfig",
+  "type": "object"
+}
