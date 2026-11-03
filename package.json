@@ -30,7 +30,7 @@
     "@uiw/react-codemirror": "4.24.1",
     "ajv": "^8.20.0",
     "lucide-react": "0.542.0",
-    "next": "15.5.27",
+    "next": "15.5.28",
     "react": "19.1.4",
     "react-dom": "19.1.4",
     "yaml": "2.8.3"
